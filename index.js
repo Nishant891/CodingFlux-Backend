@@ -9,6 +9,7 @@ const io = new Server(server);
 
 const users = {};
 
+//Get an array of all the users connected in the room as an array of objects with socketId and username as their attributes.
 const getAllConnectedClients = (roomId) => {
     return Array.from(io.sockets.adapter.rooms.get(roomId)).map((socketId) => {
         return {
@@ -19,12 +20,12 @@ const getAllConnectedClients = (roomId) => {
 }
 
 io.on('connection', (socket) => {
-
+    //Listen for any join event populate the users object and get all connected clients and for every client emit another event joined.
     socket.on(Actions.JOIN, ({roomId, username}) => {
         const userName = username;
-        console.log(socket.id);
         users[socket.id] = username;
         socket.join(roomId);
+        //This clients array is send as one of the values to the client side ehere it is used to set the state of client.
         const clients = getAllConnectedClients(roomId);
         clients.forEach(({socketId}) => {
             io.to(socketId).emit(Actions.JOINED, {
@@ -35,6 +36,7 @@ io.on('connection', (socket) => {
         })
     })
 
+    //Executes whenever a user leaves the room. 
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {
@@ -47,13 +49,15 @@ io.on('connection', (socket) => {
         socket.leave();
     })
 
+    //Listen to any code change events from the client side whenever user writes something in code editor and broadcast it to all other connected clients.
     socket.on(Actions.CODE_CHANGE, ({ roomId, code, name }) => {
         socket.in(roomId).emit(Actions.CODE_CHANGE, { code : code, name });
     })
 
-    socket.on(Actions.SYNC_CODE, ({roomId, code, socketId, name }) => {
-        console.log(socketId);
-        console.log(code);
+    //This event is emited from the as a response of joined event from the client side.
+    //Emitted by everyone except the newly joined user.
+    socket.on(Actions.SYNC_CODE, ({ code, socketId, name }) => {
+        //Emit an event as a response to change code in new users editor. This event is emited once when a new user first joines or the page reloads. 
         socket.to(socketId).emit(Actions.CODE_CHANGE, { code : code, name : name }); 
     })
 })
