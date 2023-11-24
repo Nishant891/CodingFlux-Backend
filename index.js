@@ -1,11 +1,19 @@
 const express = require("express");
 const app = express();
 const http = require("http");
+const cors = require('cors');
 const { Server } =  require("socket.io");
 const Actions = require('./Actions');
 
+app.use(cors());
+
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+      origin: 'https://codingflux.vercel.app/',
+      methods: ['GET', 'POST'],
+    },
+  });
 
 const users = {};
 
