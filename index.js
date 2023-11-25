@@ -22,6 +22,10 @@ const getAllConnectedClients = (roomId) => {
     })
 }
 
+app.get('/', (req, res) => {
+    res.send('Hello, World!');
+  });  
+
 io.on('connection', (socket) => {
     //Listen for any join event populate the users object and get all connected clients and for every client emit another event joined.
     socket.on(Actions.JOIN, ({roomId, username}) => {
