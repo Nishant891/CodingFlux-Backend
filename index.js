@@ -69,5 +69,5 @@ io.on('connection', (socket) => {
     })
 })
 
-const PORT = 5000;
-server.listen(PORT, () => {console.log(`Alpha is online on ${PORT}`)});
+const port = process.env.PORT || 5000;
+server.listen(port, "0.0.0.0", () => {console.log(`Alpha is online on ${port}`)});
